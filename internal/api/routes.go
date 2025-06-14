@@ -5,12 +5,20 @@ import (
 	"net/http"
 )
 
-func NewRouter() http.Handler {
+func NewRouter(h *Handler) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello from structured Go")
+	mux.HandleFunc("/notes", func(w http.ResponseWriter, r *http.Request){
+		switch r.Method {
+		case http.MethodGet:
+			h.ListNotes(w,r)
+		case http.MethodPost:
+			h.CreateNote(w,r)
+		default:
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
 	})
+
 
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request){
 		fmt.Fprintln(w, "I am health")

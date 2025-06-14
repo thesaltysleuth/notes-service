@@ -5,15 +5,19 @@ import(
 	"net/http"
 
 	"github.com/thesaltysleuth/notes-service/internal/api"
+	"github.com/thesaltysleuth/notes-service/internal/store"
+
 )
 
 
 func main(){
-	handler := api.NewRouter()
+	store := store.NewNoteStore()
+	handler := api.NewHandler(store)
+	router := api.NewRouter(handler)
 
 	server := &http.Server{
 		Addr: ":8080",
-		Handler: handler,
+		Handler: router,
 	}
 
 	log.Println("Server starting on http://localhost:8080")
