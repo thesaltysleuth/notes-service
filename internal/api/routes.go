@@ -19,10 +19,13 @@ func NewRouter(h *Handler) http.Handler {
 		}
 	})
 
+	mux.HandleFunc("/signup", h.Signup)
+	mux.HandleFunc("/login", h.Login)
+
 
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request){
 		fmt.Fprintln(w, "I am health")
 	})
 
-	return mux
+	return LoggingMiddleware(mux)
 }

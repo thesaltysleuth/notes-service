@@ -10,11 +10,15 @@ import (
 
 type Handler struct {
 	Store *store.NoteStore
+	Users *store.UserStore
 }
 
 
-func NewHandler(store *store.NoteStore) *Handler {
-	return &Handler{Store: store}
+func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore) *Handler {
+	return &Handler{
+		Store: noteStore,
+		Users: userStore,
+	}
 }
 
 func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
@@ -40,5 +44,45 @@ func (h *Handler) ListNotes(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notes)
+}
+
+func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
+	var req struct{
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err!=nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.Users.Add(req.Username, req.Password); err!=nil{
+		http.Error(w, "user exists", http.StatusConflict)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("signup success"))
+}
+
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err!=nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if !h.Users.Validate(req.Username, req.Password) {
+		http.Error(w, "invalid creds", http.StatusUnauthorized)
+		return
+	}
+
+	// TODO: Issue JWT later
+	w.Write([]byte("login success"))
 }
 
