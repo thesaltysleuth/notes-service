@@ -8,7 +8,7 @@ import (
 func NewRouter(h *Handler) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/notes", func(w http.ResponseWriter, r *http.Request){
+	mux.Handle("/notes", AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
 		switch r.Method {
 		case http.MethodGet:
 			h.ListNotes(w,r)
@@ -17,7 +17,7 @@ func NewRouter(h *Handler) http.Handler {
 		default:
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
 	mux.HandleFunc("/signup", h.Signup)
 	mux.HandleFunc("/login", h.Login)

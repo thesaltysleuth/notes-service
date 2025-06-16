@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/thesaltysleuth/notes-service/internal/store"
-
+	"github.com/thesaltysleuth/notes-service/internal/store"	
+	"github.com/thesaltysleuth/notes-service/internal/auth"
 )
 
 type Handler struct {
@@ -72,10 +72,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err!=nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
-		return
-	}
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	if !h.Users.Validate(req.Username, req.Password) {
 		http.Error(w, "invalid creds", http.StatusUnauthorized)
@@ -83,6 +80,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: Issue JWT later
-	w.Write([]byte("login success"))
+
+	token, err := auth.GenerateToken(req.Username)
+	if err!= nil {
+		http.Error(w, "failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"token": token})
+
 }
 
