@@ -51,3 +51,21 @@ func TestCreateAndListNotes(t *testing.T) {
 		t.Fatalf("want 1 note, got %d", len(notes))
 	}
 }
+
+
+func TestAuthMissingToken(t *testing.T) {
+	nStore := store.NewNoteStore()
+	uStore := store.NewUserStore()
+	h := api.NewHandler(nStore, uStore)
+	router := api.NewRouter(h)
+
+	//Try to access /notes without any token
+	req := httptest.NewRequest(http.MethodGet, "/notes", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401, got %d", rec.Code)
+	}
+}
+
