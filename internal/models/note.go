@@ -8,6 +8,7 @@ type Note struct{
 	Title		string		`json:"title"`
 	Content		string		`json:"content"`
 	CreatedAt	time.Time 	`json:"created_at"`
+	Owner 		string `json:"-"` // Hide from JSON response for now
 }
 
 

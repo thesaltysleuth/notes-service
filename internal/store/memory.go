@@ -10,18 +10,18 @@ import (
 
 type NoteStore struct {
 	mu sync.Mutex
-	notes []models.Note
+	notes map[string][]models.Note //key = owner
 	nextID int
 }
 
 func NewNoteStore() *NoteStore {
 	return &NoteStore{
-		notes: []models.Note{},
+		notes: make(map[string][]models.Note),
 		nextID: 1,
 	}
 }
 
-func (s *NoteStore) Add(title,content string) models.Note {
+func (s *NoteStore) Add(owner,title,content string) models.Note {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -30,9 +30,10 @@ func (s *NoteStore) Add(title,content string) models.Note {
 		Title:		title,
 		Content: 	content,
 		CreatedAt: 	time.Now(),
+		Owner: owner,
 	}
 
-	s.notes = append(s.notes, note)
+	s.notes[owner] = append(s.notes[owner], note)
 	s.nextID++
 
 	return note
@@ -40,9 +41,9 @@ func (s *NoteStore) Add(title,content string) models.Note {
 }
 
 
-func (s *NoteStore) GetAll() []models.Note{
+func (s *NoteStore) GetAll(owner string) []models.Note{
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	return append([]models.Note(nil), s.notes...) //copy
+	return append([]models.Note(nil), s.notes[owner]...) //copy
 }

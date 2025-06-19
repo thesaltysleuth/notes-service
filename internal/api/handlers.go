@@ -22,6 +22,8 @@ func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore) *Handler
 }
 
 func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value("username").(string)
+
 	var req struct{
 		Title	string	`json:"title"`
 		Content	string 	`json:"content"`
@@ -31,7 +33,7 @@ func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note := h.Store.Add(req.Title, req.Content)
+	note := h.Store.Add(user, req.Title, req.Content)
 
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -40,7 +42,9 @@ func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListNotes(w http.ResponseWriter, r *http.Request) {
-	notes := h.Store.GetAll()
+	user := r.Context().Value("username").(string)
+
+	notes := h.Store.GetAll(user)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notes)
