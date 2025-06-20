@@ -69,3 +69,27 @@ func TestAuthMissingToken(t *testing.T) {
 	}
 }
 
+func TestInvalidMethod(t *testing.T) {
+	nStore := store.NewNoteStore()
+	uStore := store.NewUserStore()
+
+	//fake user + token
+	const user = "test"
+	uStore.Add(user, "pw")
+	token, _ := auth.GenerateToken(user)
+	
+	h := api.NewHandler(nStore,uStore)
+	//build server
+	router := api.NewRouter(h)
+
+	// create note
+	body, _ := json.Marshal(map[string]string{"title":"t", "content":"c"})
+	req := httptest.NewRequest(http.MethodPut, "/notes", bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("expected 405, got %d", rec.Code)
+	}
+}

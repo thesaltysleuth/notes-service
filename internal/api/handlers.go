@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/thesaltysleuth/notes-service/internal/store"	
 	"github.com/thesaltysleuth/notes-service/internal/auth"
+	"github.com/thesaltysleuth/notes-service/internal/models"
+	"github.com/thesaltysleuth/notes-service/internal/store"
 )
 
 type Handler struct {
@@ -22,22 +23,27 @@ func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore) *Handler
 }
 
 func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("username").(string)
-
-	var req struct{
-		Title	string	`json:"title"`
-		Content	string 	`json:"content"`
+	user,ok := r.Context().Value("username").(string)
+	if !ok {
+		respondError(w, http.StatusUnauthorized, "unauthorized")
+		return
 	}
-	if err:= json.NewDecoder(r.Body).Decode(&req); err!=nil{
-		http.Error(w, "invalid request", http.StatusBadRequest)
+	
+	var note models.Note	
+	if err:= json.NewDecoder(r.Body).Decode(&note); err!=nil{
+		respondError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	
+	if note.Title == "" || note.Content == "" {
+		respondError(w, http.StatusBadRequest, "title and content required")
 		return
 	}
 
-	note := h.Store.Add(user, req.Title, req.Content)
+	note.Owner = user
+	note = h.Store.Add(user, note.Title, note.Content)
 
-	w.Header().Set("Content-Type","application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(note)
+	respondJSON(w, http.StatusCreated, note)
 
 }
 
