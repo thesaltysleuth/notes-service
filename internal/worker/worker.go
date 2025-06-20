@@ -2,6 +2,8 @@ package worker
 
 import (
 	"sync"
+	"time"
+//	"fmt"
 )
 
 type Job int  		// for today, an int we'll square
@@ -14,12 +16,15 @@ func StartPool(concurrency int, jobs <-chan Job) <-chan Result {
 
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
-		go func() {
+		go func(id int) {
 			defer wg.Done()
 			for j := range jobs {
-				results <- Result(j*j)
+				time.Sleep(100 * time.Millisecond) //simulate heavy task
+				res := Result(j*j)
+				// fmt.Printf("Worker %d processed %d -> %d \n", id, j, res)
+				results <- res
 			}
-		}()
+		}(i)
 	}
 
 	go func() {
