@@ -34,4 +34,31 @@ func StartPool(concurrency int, jobs <-chan Job) <-chan Result {
 	return results
 }
 
+func StartPoolChanOnly(concurrency int, jobs <-chan Job) <-chan Result{
+	results := make(chan Result)
+	done := make(chan struct{}) //counting when workers finish
+
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			for j:= range jobs{
+				time.Sleep(100 * time.Millisecond)
+				results <- Result(j * j)
+			}
+			done <- struct{}{}
+		}()
+	}
+
+	// Watchdog closes results after all workers signal done
+	go func() {
+		for i := 0; i < concurrency; i++ {
+			<-done
+		}
+		close(results)
+	}()
+
+	//results channel is not closed
+	return results
+}
+
+
 

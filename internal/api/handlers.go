@@ -7,6 +7,7 @@ import (
 	"github.com/thesaltysleuth/notes-service/internal/auth"
 	"github.com/thesaltysleuth/notes-service/internal/models"
 	"github.com/thesaltysleuth/notes-service/internal/store"
+	"github.com/thesaltysleuth/notes-service/internal/worker"
 )
 
 type Handler struct {
@@ -101,4 +102,28 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 
 }
+
+func (h *Handler) Analyze(w http.ResponseWriter, r *http.Request) {
+	var jobs []int
+	if err := json.NewDecoder(r.Body).Decode(&jobs); err!=nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	jobChan := make(chan worker.Job, len(jobs))
+	for _, j := range jobs {
+		jobChan <- worker.Job(j)
+	}
+	close(jobChan)
+
+	var results []int
+	for res:= range worker.StartPool(4, jobChan) {
+		results = append(results, int(res))
+	}
+
+	json.NewEncoder(w).Encode(results)
+}
+
+
+
 
