@@ -1,3 +1,4 @@
+
 # notes-service
 
 A small Go REST API for taking notes.  
@@ -33,16 +34,20 @@ go run ./cmd/server
 | GET    | /notes      | list user notes       |
 | POST   | /notes      | create new note       |
 
-`Authorization: Bearer <token>` required on `/notes`.
+> `Authorization: Bearer <token>` required on `/notes`.
+
+---
 
 ## Benchmarks
-| benchmark          | ns/op* |
-|--------------------|--------|
-| Serial (n*n)       | **0.26** |
-| Pool (chan)        | **215** |
-| Pool (WaitGroup)   | _TBD_   |
 
-\* Ryzen 7 5800H, Go 1.22.
+Simulated heavy task: `time.Sleep(100 * time.Millisecond)`  
+Machine: Ryzen 7 5800H, Go 1.22
+
+| Benchmark              | ns/op    |
+|------------------------|----------|
+| Serial (n*n)           | **0.68** |
+| Pool (WaitGroup)       | 6,353,625 |
+| Pool (Chan-only)       | 6,320,522 |
 
 ---
 
@@ -62,4 +67,3 @@ go vet ./...
 golangci-lint run
 ```
 
-PRs & issues welcome!
