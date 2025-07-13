@@ -49,6 +49,13 @@ Machine: Ryzen 7 5800H, Go 1.22
 | Pool (WaitGroup)       | 6,353,625 |
 | Pool (Chan-only)       | 6,320,522 |
 
+Counters
+
+| Benchmark         |  ns/op |
+|-------------------|--------|
+| Counter-Atomic    |   13   |
+| Counter-Mutex     |   52   |
+
 ---
 
 ## Roadmap
