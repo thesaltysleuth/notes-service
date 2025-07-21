@@ -10,20 +10,36 @@ import(
 
 	"github.com/thesaltysleuth/notes-service/internal/api"
 	"github.com/thesaltysleuth/notes-service/internal/store"
-
+	"github.com/thesaltysleuth/tasker"
 )
 
 
 func main(){
 	noteStore := store.NewNoteStore()
 	userStore := store.NewUserStore()
-	handler := api.NewHandler(noteStore, userStore)
+
+	//init Tasker (Redis @ localhost:6379 for dev)
+	tq := tasker.New("localhost:6379", "", 0)
+
+	//register a task handler
+	tasker.RegisterTask("index_note", func(ctx context.Context, args map[string]any) error {
+		id := args["id"]
+		log.Println("indexing note id", id) //pretend to push to Elastic/Typesense
+		return nil
+	})
+
+	// start workers (2 goroutines)
+	tq.StartWorker(context.Background(), 2)
+
+	
+	handler := api.NewHandler(noteStore, userStore, tq)
 	router := api.NewRouter(handler)
 
 	server := &http.Server{
 		Addr: ":8080",
 		Handler: router,
 	}
+	
 
 	go func() {	
 		log.Println("Server starting on http://localhost:8080")

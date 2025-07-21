@@ -2,24 +2,28 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/thesaltysleuth/notes-service/internal/auth"
 	"github.com/thesaltysleuth/notes-service/internal/models"
 	"github.com/thesaltysleuth/notes-service/internal/store"
 	"github.com/thesaltysleuth/notes-service/internal/worker"
+	"github.com/thesaltysleuth/tasker"
 )
 
 type Handler struct {
 	Store *store.NoteStore
 	Users *store.UserStore
+	TaskQ *tasker.Queue
 }
 
 
-func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore) *Handler {
+func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore, q *tasker.Queue) *Handler { 
 	return &Handler{
 		Store: noteStore,
 		Users: userStore,
+		TaskQ: q,
 	}
 }
 
@@ -43,6 +47,12 @@ func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
 
 	note.Owner = user
 	note = h.Store.Add(user, note.Title, note.Content)
+
+	//enqueue background index job
+	_, err := h.TaskQ.EnqueueTask(r.Context(), "index_note", map[string]any{"id":note.ID})
+	if err != nil {
+		log.Println("enqueue failed", err) // do not 5xx user
+	}
 
 	respondJSON(w, http.StatusCreated, note)
 
