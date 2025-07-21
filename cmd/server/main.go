@@ -19,7 +19,7 @@ func main(){
 	userStore := store.NewUserStore()
 
 	//init Tasker (Redis @ localhost:6379 for dev)
-	tq := tasker.New("localhost:6379", "", 0)
+	tq := tasker.New(os.Getenv("REDIS_ADDR"), "", 0)
 
 	//register a task handler
 	tasker.RegisterTask("index_note", func(ctx context.Context, args map[string]any) error {
