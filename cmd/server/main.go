@@ -27,6 +27,11 @@ func main(){
 		noteStore = ns
 	}
 
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr != "" {
+		noteStore = store.NewCachedNoteStore(noteStore, redisAddr, 30*time.Second)
+	}
+
 	//init Tasker (Redis @ localhost:6379 for dev)
 	tq := tasker.New(os.Getenv("REDIS_ADDR"), "", 0)
 
