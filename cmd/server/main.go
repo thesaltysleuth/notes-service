@@ -15,8 +15,17 @@ import(
 
 
 func main(){
-	noteStore := store.NewNoteStore()
+	var noteStore store.NoteStore
 	userStore := store.NewUserStore()
+	dsn := os.Getenv("DB_DSN")
+
+	if dsn == "" {
+		noteStore = store.NewMemNoteStore() 
+	} else {
+		ns, err := store.NewPGNoteStore(dsn)
+		if err != nil { log.Fatal(err) }
+		noteStore = ns
+	}
 
 	//init Tasker (Redis @ localhost:6379 for dev)
 	tq := tasker.New(os.Getenv("REDIS_ADDR"), "", 0)

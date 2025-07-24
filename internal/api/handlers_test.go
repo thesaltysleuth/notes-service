@@ -5,18 +5,21 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/thesaltysleuth/notes-service/internal/api"
 	"github.com/thesaltysleuth/notes-service/internal/auth"
 	"github.com/thesaltysleuth/notes-service/internal/store"
+	"github.com/thesaltysleuth/tasker"
 )
 
 
 func TestCreateAndListNotes(t *testing.T) {
-	nStore := store.NewNoteStore()
+	nStore := store.NewMemNoteStore()
 	uStore := store.NewUserStore()
-	h := api.NewHandler(nStore,uStore)
+	q := tasker.New(os.Getenv("REDIS_ADDR"),"",0)
+	h := api.NewHandler(nStore,uStore,q)
 
 
 	//fake user + token
@@ -54,9 +57,10 @@ func TestCreateAndListNotes(t *testing.T) {
 
 
 func TestAuthMissingToken(t *testing.T) {
-	nStore := store.NewNoteStore()
+	nStore := store.NewMemNoteStore()
 	uStore := store.NewUserStore()
-	h := api.NewHandler(nStore, uStore)
+	q := tasker.New(os.Getenv("REDIS_ADDR"),"",0)
+	h := api.NewHandler(nStore, uStore,q)
 	router := api.NewRouter(h)
 
 	//Try to access /notes without any token
@@ -70,15 +74,16 @@ func TestAuthMissingToken(t *testing.T) {
 }
 
 func TestInvalidMethod(t *testing.T) {
-	nStore := store.NewNoteStore()
+	nStore := store.NewMemNoteStore()
 	uStore := store.NewUserStore()
-
+	q := tasker.New(os.Getenv("REDIS_ADDR"),"",0)
+	
 	//fake user + token
 	const user = "test"
 	uStore.Add(user, "pw")
 	token, _ := auth.GenerateToken(user)
 	
-	h := api.NewHandler(nStore,uStore)
+	h := api.NewHandler(nStore,uStore,q)
 	//build server
 	router := api.NewRouter(h)
 

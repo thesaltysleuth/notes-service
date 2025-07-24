@@ -13,13 +13,13 @@ import (
 )
 
 type Handler struct {
-	Store *store.NoteStore
+	Store store.NoteStore
 	Users *store.UserStore
 	TaskQ *tasker.Queue
 }
 
 
-func NewHandler(noteStore *store.NoteStore, userStore *store.UserStore, q *tasker.Queue) *Handler { 
+func NewHandler(noteStore store.NoteStore, userStore *store.UserStore, q *tasker.Queue) *Handler { 
 	return &Handler{
 		Store: noteStore,
 		Users: userStore,
