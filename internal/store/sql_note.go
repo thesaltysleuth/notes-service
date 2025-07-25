@@ -1,8 +1,12 @@
 package store
 
 import (
+	"context"
 	"database/sql"
+	"time"
+
 	"github.com/google/uuid"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
 	"github.com/thesaltysleuth/notes-service/internal/models"
 )
@@ -10,8 +14,20 @@ import (
 type PGNoteStore struct { db *sql.DB }
 
 func NewPGNoteStore(dsn string) (*PGNoteStore, error) {
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("pgx", dsn)
 	if err != nil { return nil, err }
+
+	// ---- pool tuning ----
+	db.SetMaxOpenConns(20) // parallel queries
+	db.SetMaxIdleConns(5) // keep-alive
+	db.SetConnMaxLifetime(time.Hour) // recycle long-lived
+
+
+	//ping
+	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	defer cancel()
+	if err := db.PingContext(ctx); err!=nil { return nil,err }
+
 	return &PGNoteStore{db: db},nil
 }
 
