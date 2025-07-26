@@ -64,7 +64,7 @@ func (h *Handler) ListNotes(w http.ResponseWriter, r *http.Request) {
 	notes := h.Store.GetAll(user)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notes)
+	_ = json.NewEncoder(w).Encode(notes)
 }
 
 func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("signup success"))
+	_,_ = w.Write([]byte("signup success"))
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -109,7 +109,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	_ = json.NewEncoder(w).Encode(map[string]string{"token": token})
 
 }
 
@@ -131,7 +131,7 @@ func (h *Handler) Analyze(w http.ResponseWriter, r *http.Request) {
 		results = append(results, int(res))
 	}
 
-	json.NewEncoder(w).Encode(results)
+	_ = json.NewEncoder(w).Encode(results)
 }
 
 

@@ -24,7 +24,7 @@ func TestCreateAndListNotes(t *testing.T) {
 
 	//fake user + token
 	const user = "test"
-	uStore.Add(user, "pw")
+	_ = uStore.Add(user, "pw")
 	token, _ := auth.GenerateToken(user)
 
 	//build server
@@ -80,7 +80,7 @@ func TestInvalidMethod(t *testing.T) {
 	
 	//fake user + token
 	const user = "test"
-	uStore.Add(user, "pw")
+	_ = uStore.Add(user, "pw")
 	token, _ := auth.GenerateToken(user)
 	
 	h := api.NewHandler(nStore,uStore,q)
