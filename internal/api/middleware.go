@@ -36,8 +36,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
     // no lint
-		type username struct{}
-		ctx := context.WithValue(r.Context(), username{}, claims.Username)
+		ctx := context.WithValue(r.Context(), "username", claims.Username)
 		next.ServeHTTP(w, r.WithContext(ctx))
 
 	})

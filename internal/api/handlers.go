@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/thesaltysleuth/notes-service/internal/auth"
@@ -28,7 +29,9 @@ func NewHandler(noteStore store.NoteStore, userStore *store.UserStore, q *tasker
 }
 
 func (h *Handler) CreateNote(w http.ResponseWriter, r *http.Request) {
+
 	user,ok := r.Context().Value("username").(string)
+	fmt.Println("DEBUG:: ", user, " : ", ok)
 	if !ok {
 		respondError(w, http.StatusUnauthorized, "unauthorized")
 		return
