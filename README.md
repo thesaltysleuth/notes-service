@@ -2,7 +2,7 @@
 # notes-service
 
 A small Go REST API for taking notes.  
-Built as part of a backend-systems master roadmap.
+Built as part of a backend-systems demo
 
 ## Features
 - CRUD `/notes` with JWT auth
